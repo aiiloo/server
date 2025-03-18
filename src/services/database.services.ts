@@ -1,5 +1,7 @@
-import { Db, MongoClient } from 'mongodb'
+import { Collection, Db, MongoClient } from 'mongodb'
 import dotenv from 'dotenv'
+import User from '~/models/schemas/User.schema'
+import RefreshToken from '~/models/schemas/RefreshToken.schema'
 
 dotenv.config()
 
@@ -27,6 +29,14 @@ class DatabaseService {
     //   // Ensures that the client will close when you finish/error
     //   await client.close()
     // }
+  }
+
+  get users(): Collection<User> {
+    return this.db.collection(process.env.DB_USERS_COLLECTION as string)
+  }
+
+  get refreshTokens(): Collection<RefreshToken> {
+    return this.db.collection(process.env.DB_REFRESH_TOKEN_COLLECTION as string)
   }
 }
 
