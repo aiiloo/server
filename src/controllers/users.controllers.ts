@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import { NextFunction, ParamsDictionary } from 'express-serve-static-core'
+import { omit } from 'lodash'
 import { ObjectId } from 'mongodb'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { USERS_MESSAGE } from '~/constants/messages'
@@ -12,20 +13,25 @@ export const loginController = async (req: Request<ParamsDictionary, any, LoginR
   const user = req.user as User
   const user_id = user._id as ObjectId
   const result = await usersServices.login({ user_id: user_id.toString(), verify: user.verify })
+  const userData = omit(user, ['password', 'email_verify_token', 'forgot_password_token'])
   return res.json({
     message: USERS_MESSAGE.LOGIN_SUCCESSFULLY,
-    data: result
+    data: {
+      ...result,
+      user: userData
+    }
   })
 }
+
 export const registerController = async (
   req: Request<ParamsDictionary, any, RegisterReqBody>,
   res: Response,
   next: NextFunction
 ) => {
-  const result = await usersServices.register(req.body)
+  await usersServices.register(req.body)
   return res.status(201).json({
     message: USERS_MESSAGE.REGISTER_SUCCESSFULLY,
-    data: result
+    data: {}
   })
 }
 
@@ -62,10 +68,13 @@ export const verifyEmailController = async (
   }
 
   const result = await usersServices.verifyEmail(user_id)
-
+  const userData = omit(user, ['password', 'email_verify_token', 'forgot_password_token'])
   return res.json({
     message: USERS_MESSAGE.EMAIL_VERIFY_SUCCESSFULLY,
-    data: result
+    data: {
+      ...result,
+      user: userData
+    }
   })
 }
 
