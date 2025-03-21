@@ -7,6 +7,7 @@ import databaseService from './database.services'
 import User from '~/models/schemas/User.schema'
 import { hashPassword } from '~/utils/crypto'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
+import { sendEmail } from '~/emails/smtp'
 
 class UsersService {
   private signAccessToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
@@ -79,7 +80,15 @@ class UsersService {
       new RefreshToken({ token: refresh_token, user_id: new ObjectId(user_id) })
     )
 
-    console.log('email_verify_token', email_verify_token)
+    await sendEmail({
+      to: payload.email,
+      subject: 'Verify Your Email',
+      templateName: 'verifyEmail',
+      replacements: {
+        USERNAME: payload.name,
+        VERIFY_LINK: `http://localhost:3000/email-verify?token=${email_verify_token}`
+      }
+    })
     return {
       access_token,
       refresh_token
@@ -97,6 +106,34 @@ class UsersService {
       user_id,
       verify
     })
+    await databaseService.refreshTokens.insertOne(
+      new RefreshToken({ token: refresh_token, user_id: new ObjectId(user_id) })
+    )
+    return {
+      access_token,
+      refresh_token
+    }
+  }
+
+  async verifyEmail(user_id: string) {
+    const [token] = await Promise.all([
+      this.signAccessAndRefreshToken({
+        user_id,
+        verify: UserVerifyStatus.Verified
+      }),
+      databaseService.users.updateOne(
+        { _id: new ObjectId(user_id) },
+        {
+          $set: {
+            email_verify_token: '',
+            verify: UserVerifyStatus.Verified
+            //  updated_at: new Date()
+          },
+          $currentDate: { updated_at: true }
+        }
+      )
+    ])
+    const [access_token, refresh_token] = token
     await databaseService.refreshTokens.insertOne(
       new RefreshToken({ token: refresh_token, user_id: new ObjectId(user_id) })
     )
