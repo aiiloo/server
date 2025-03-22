@@ -36,9 +36,13 @@ export const registerController = async (
 }
 
 export const oauthController = async (req: Request, res: Response) => {
-  return res.json({
-    message: 'OAuth success'
-  })
+  const { code } = req.query
+  console.log(req.query)
+  const result = await usersServices.oauth(code as string)
+  console.log('result: ', result)
+  const userDataEncoded = encodeURIComponent(JSON.stringify(result.userData))
+  const urlRedirect = `${process.env.CLIENT_REDIRECT_CALLBACK}?access_token=${result.access_token}&refresh_token=${result.refresh_token}&new_user=${result.newUser}&user_data=${userDataEncoded}`
+  return res.redirect(urlRedirect)
 }
 
 export const logoutController = async (req: Request, res: Response) => {
