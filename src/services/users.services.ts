@@ -199,11 +199,17 @@ class UsersService {
         comfirm_password: password
       })
 
+      const user = await databaseService.users.findOneAndUpdate(
+        { email: userInfo.email },
+        { $set: { avatar: userInfo.picture } },
+        { returnDocument: 'after' }
+      )
+
       return {
         ...data,
         newUser: 1,
         verify: UserVerifyStatus.Unverified,
-        userData: omit(data, ['password', 'email_verify_token', 'forgot_password_token'])
+        userData: omit(user, ['password', 'email_verify_token', 'forgot_password_token'])
       }
     }
   }
@@ -233,6 +239,13 @@ class UsersService {
     return {
       access_token,
       refresh_token
+    }
+  }
+
+  async logout(refresh_token: string) {
+    await databaseService.refreshTokens.deleteOne({ token: refresh_token })
+    return {
+      message: USERS_MESSAGE.LOGOUT_SUCCESSFULLY
     }
   }
 }
