@@ -204,8 +204,6 @@ class UsersService {
     const filePath = file.path
     await sharp(filePath).jpeg().toFile(newPath)
 
-    console.log('check newName', newName)
-
     await fs.unlinkSync(filePath)
 
     return `${newName}.jpg`
