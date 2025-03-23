@@ -1,6 +1,12 @@
 import { Router } from 'express'
-import { loginController, registerController } from '~/controllers/users.controllers'
-import { loginValidator, registerValidator } from '~/middlewares/users.middlewares'
+import {
+  getMyProfileController,
+  loginController,
+  registerController,
+  updateMyProfileController
+} from '~/controllers/users.controllers'
+import { loginValidator, registerValidator, accessTokenValidator } from '~/middlewares/users.middlewares'
+import { upload } from '~/middlewares/uploadFile.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
 
 const usersRouter = Router()
@@ -15,6 +21,16 @@ usersRouter.post(
 
   registerValidator,
   wrapRequestHandler(registerController)
+)
+usersRouter.get('/myProfile', accessTokenValidator, wrapRequestHandler(getMyProfileController))
+usersRouter.post(
+  '/profile/update',
+  accessTokenValidator,
+  upload.fields([
+    { name: 'avatar', maxCount: 1 },
+    { name: 'cover_photo', maxCount: 1 }
+  ]),
+  wrapRequestHandler(updateMyProfileController)
 )
 
 export default usersRouter

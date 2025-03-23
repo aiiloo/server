@@ -1,10 +1,11 @@
-import { Request, Response } from 'express'
+import e, { Request, Response } from 'express'
 import { NextFunction, ParamsDictionary } from 'express-serve-static-core'
 import { ObjectId } from 'mongodb'
 import { USERS_MESSAGE } from '~/constants/messages'
 import { LoginRequestBody, RegisterReqBody } from '~/models/requests/User.requests'
 import User from '~/models/schemas/User.schema'
 import usersServices from '~/services/users.services'
+import { UpdateUserProfile } from '~/types/users.types'
 
 export const loginController = async (req: Request<ParamsDictionary, any, LoginRequestBody>, res: Response) => {
   const user = req.user as User
@@ -102,5 +103,48 @@ export const followController = async (req: Request, res: Response) => {
 export const unfollowController = async (req: Request, res: Response) => {
   return res.json({
     message: 'Unfollow success'
+  })
+}
+
+export const getMyProfileController = async (req: Request, res: Response) => {
+  const { user_id } = req.decoded_authorization.user_id
+  const result = await usersServices.getMyProfile(user_id)
+  if (result)
+    return res.status(201).json({
+      message: USERS_MESSAGE.GET_MY_PROFILE_SUCCESSFULLY,
+      data: result
+    })
+  else
+    return res.status(404).json({
+      message: USERS_MESSAGE.GET_MY_PROFILE_FAILURE,
+      data: result
+    })
+}
+
+export const updateMyProfileController = async (
+  req: Request<ParamsDictionary, any, UpdateUserProfile>,
+  res: Response
+) => {
+  const user_id = req.decoded_authorization.user_id
+  const data: UpdateUserProfile = req.body
+
+  if (req.files) {
+    const files = req.files as Record<string, Express.Multer.File[]>
+
+    if (files.avatar) {
+      data.files = data.files || {}
+      data.files.avatar = files.avatar[0]
+    }
+    if (files.cover_photo) {
+      data.files = data.files || {}
+      data.files.cover_photo = files.cover_photo[0]
+    }
+  }
+
+  const result = await usersServices.updateMyProfile(user_id, data)
+
+  return res.status(404).json({
+    message: '',
+    data: result
   })
 }
