@@ -4,7 +4,13 @@ import { omit } from 'lodash'
 import { ObjectId } from 'mongodb'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { USERS_MESSAGE } from '~/constants/messages'
-import { LoginRequestBody, RegisterReqBody, TokenPayLoad, VerifyEmailReqBody } from '~/models/requests/User.requests'
+import {
+  LoginRequestBody,
+  LogoutReqBody,
+  RegisterReqBody,
+  TokenPayLoad,
+  VerifyEmailReqBody
+} from '~/models/requests/User.requests'
 import User from '~/models/schemas/User.schema'
 import databaseService from '~/services/database.services'
 import usersServices from '~/services/users.services'
@@ -45,9 +51,12 @@ export const oauthController = async (req: Request, res: Response) => {
   return res.redirect(urlRedirect)
 }
 
-export const logoutController = async (req: Request, res: Response) => {
-  return res.json({
-    message: 'Logout success'
+export const logoutController = async (req: Request<ParamsDictionary, any, LogoutReqBody>, res: Response) => {
+  const { refresh_token } = req.body
+  const result = await usersServices.logout(refresh_token)
+
+  return res.status(200).json({
+    message: USERS_MESSAGE.LOGOUT_SUCCESSFULLY
   })
 }
 
