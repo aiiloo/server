@@ -2,6 +2,7 @@ import express from 'express'
 import databaseService from './services/database.services'
 import usersRouter from './routes/users.routes'
 import { defaultErrorHanlder } from './middlewares/erros.middlewares'
+import path from 'path'
 import cors from 'cors'
 import { config } from 'dotenv'
 
@@ -11,8 +12,11 @@ const app = express()
 app.use(cors())
 const port = process.env.PORT || 4000
 
+
 databaseService.connect()
 app.use(express.json())
+
+app.use('/images', express.static(path.join(__dirname, 'assets/images')))
 
 app.use('/users', usersRouter)
 
