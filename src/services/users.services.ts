@@ -43,6 +43,26 @@ class UsersService {
     })
   }
 
+  private signRefreshTokenWithExp({
+    user_id,
+    verify,
+    exp
+  }: {
+    user_id: string
+    verify: UserVerifyStatus
+    exp: number
+  }) {
+    return signToken({
+      payload: {
+        user_id,
+        token_type: TokenType.RefreshToken,
+        verify,
+        exp
+      },
+      privateKey: process.env.JWT_SECRET_REFRESH_TOKEN as string
+    })
+  }
+
   private signEmailVerifyToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     return signToken({
       payload: {
@@ -59,6 +79,21 @@ class UsersService {
 
   private signAccessAndRefreshToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     return Promise.all([this.signAccessToken({ user_id, verify }), this.signRefreshToken({ user_id, verify })])
+  }
+
+  private signAccessAndRefreshTokenWithExp({
+    user_id,
+    verify,
+    refreshTokenExp
+  }: {
+    user_id: string
+    verify: UserVerifyStatus
+    refreshTokenExp: number
+  }) {
+    return Promise.all([
+      this.signAccessToken({ user_id, verify }),
+      this.signRefreshTokenWithExp({ user_id, verify, exp: refreshTokenExp })
+    ])
   }
 
   private async getOauthGoogleToken(code: string) {
@@ -246,6 +281,29 @@ class UsersService {
     await databaseService.refreshTokens.deleteOne({ token: refresh_token })
     return {
       message: USERS_MESSAGE.LOGOUT_SUCCESSFULLY
+    }
+  }
+
+  async refreshToken(old_refresh_token: string, user_id: string, exp: number) {
+    const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
+    if (!user) {
+      throw new ErrorWithStatus({
+        message: USERS_MESSAGE.USER_NOT_FOUND,
+        status: HTTP_STATUS.NOT_FOUND
+      })
+    }
+    const [access_token, refresh_token] = await this.signAccessAndRefreshTokenWithExp({
+      user_id,
+      verify: user.verify,
+      refreshTokenExp: exp
+    })
+    await databaseService.refreshTokens.deleteOne({ token: old_refresh_token })
+    await databaseService.refreshTokens.insertOne(
+      new RefreshToken({ token: refresh_token, user_id: new ObjectId(user_id) })
+    )
+    return {
+      access_token,
+      refresh_token
     }
   }
 }
