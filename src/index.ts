@@ -12,7 +12,6 @@ const app = express()
 app.use(cors())
 const port = process.env.PORT || 4000
 
-
 databaseService.connect()
 app.use(express.json())
 
