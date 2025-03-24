@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb'
+import { ObjectId, UpdateFilter } from 'mongodb'
 import { TokenType, UserVerifyStatus } from '~/constants/enums'
 import { RegisterReqBody } from '~/models/requests/User.requests'
 import { signToken } from '~/utils/jwt'
@@ -7,12 +7,17 @@ import databaseService from './database.services'
 import User from '~/models/schemas/User.schema'
 import { hashPassword } from '~/utils/crypto'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
+import path from 'path'
+import fs from 'fs'
+import { UpdateUserProfile } from '~/types/users.types'
+import sharp from 'sharp'
 import { sendEmail } from '~/emails/smtp'
 import axios from 'axios'
 import { ErrorWithStatus } from '~/models/Errors'
 import { USERS_MESSAGE } from '~/constants/messages'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { omit } from 'lodash'
+
 
 class UsersService {
   private signAccessToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
@@ -196,6 +201,106 @@ class UsersService {
     }
   }
 
+
+  async getMyProfile(user_id: ObjectId | undefined): Promise<User | null> {
+    const user = await databaseService.users.findOne({ user_id })
+    if (user) return user
+    else return null
+  }
+
+  async updateMyProfile(user_id: ObjectId, data: UpdateUserProfile): Promise<{ message: string }> {
+    const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
+
+    if (!user) return { message: 'user not found' }
+
+    if (data.files?.avatar) {
+      if (user.avatar) this.deleteFile(user.avatar)
+      const ext = path.extname(data.files?.avatar.filename).toLowerCase()
+      if (ext === '.jpg') {
+        const filePath = data.files?.avatar.path
+        const fileName = path.basename(filePath)
+        const newFilePath = path.join(__dirname, '../assets/images/', fileName)
+
+        await fs.promises.rename(data.files?.avatar.path, newFilePath)
+      } else if (ext === '.png' || ext === '.jpeg') {
+        data.files.avatar.filename = await this.uploadImage(data.files?.avatar)
+      } else {
+        await fs.promises.unlink(data.files?.avatar.path)
+        return { message: 'Error processing image' }
+      }
+    }
+
+    if (data.files?.cover_photo) {
+      if (user.avatar) this.deleteFile(user.avatar)
+      const ext = path.extname(data.files?.cover_photo.filename).toLowerCase()
+      if (ext === '.jpg') {
+        const filePath = data.files?.cover_photo.path
+        const fileName = path.basename(filePath)
+        const newFilePath = path.join(__dirname, '../assets/images/', fileName)
+
+        await fs.promises.rename(data.files?.cover_photo.path, newFilePath)
+      } else if (ext === '.png' || ext === '.jpeg') {
+        data.files.cover_photo.filename = await this.uploadImage(data.files?.cover_photo)
+      } else {
+        await fs.promises.unlink(data.files?.cover_photo.path)
+        return { message: 'Error processing image' }
+      }
+    }
+
+    const updateUser: UpdateFilter<User> = {
+      $set: {
+        name: data.name,
+        date_of_birth: data.date_of_birth,
+        bio: data.bio,
+        location: data.location,
+        website: data.website,
+        username: data.username,
+        avatar: data.files?.avatar?.filename,
+        cover_photo: data.files?.cover_photo?.filename
+      }
+    }
+
+    const result = await databaseService.users.updateOne({ _id: new ObjectId(user_id) }, updateUser)
+
+    if (result.modifiedCount > 0) {
+      return {
+        message: 'Update successfully'
+      }
+    } else {
+      return {
+        message: 'Update failure'
+      }
+    }
+  }
+
+  async deleteFile(imageUrl: string): Promise<{ message: string }> {
+    const fileName = path.basename(imageUrl)
+    try {
+      await fs.promises.unlink(path.join(__dirname, '../assets/images/', fileName))
+      return { message: 'delete file success' }
+    } catch (error: any) {
+      return { message: error.message }
+    }
+  }
+
+  getNameFromFullName = (fullname: string) => {
+    const nameArr = fullname.split('.')
+    nameArr.pop()
+    return nameArr.join('')
+  }
+
+  async uploadImage(file: Express.Multer.File): Promise<string> {
+    const newName = this.getNameFromFullName(file.filename)
+
+    const newPath = path.resolve('../server/src/assets/images/', `${newName}.jpg`)
+    const filePath = file.path
+    await sharp(filePath).jpeg().toFile(newPath)
+
+    await fs.unlinkSync(filePath)
+
+    return `${newName}.jpg`
+  }
+  
   async oauth(code: string) {
     const { id_token, access_token } = await this.getOauthGoogleToken(code)
     const userInfo = await this.getGoogleUserInfo(access_token, id_token)

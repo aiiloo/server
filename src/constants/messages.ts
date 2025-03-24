@@ -39,6 +39,7 @@ export const USERS_MESSAGE = {
   FORGOT_PASSWORD_TOKEN_IS_INVALID: 'Forgot password token is invalid',
   PASSWORD_RESET_SUCCESSFULLY: 'Password reset successfully',
   GET_MY_PROFILE_SUCCESSFULLY: 'Get my profile successfully',
+  GET_MY_PROFILE_FAILURE: 'Get my profile failure',
   USER_NOT_VERIFIED: 'User not verified',
   BIO_MUST_BE_STRING: 'Bio must be string',
   BIO_LENTH_MUST_BETWEEN_1_200: 'Bio length must be between 1 and 200',
