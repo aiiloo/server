@@ -7,6 +7,7 @@ import { USERS_MESSAGE } from '~/constants/messages'
 import {
   LoginRequestBody,
   LogoutReqBody,
+  RefreshTokenReqBody,
   RegisterReqBody,
   TokenPayLoad,
   VerifyEmailReqBody
@@ -58,6 +59,19 @@ export const logoutController = async (req: Request<ParamsDictionary, any, Logou
 
   return res.status(200).json({
     message: USERS_MESSAGE.LOGOUT_SUCCESSFULLY
+  })
+}
+
+export const refreshTokenController = async (
+  req: Request<ParamsDictionary, any, RefreshTokenReqBody>,
+  res: Response
+) => {
+  const { refresh_token } = req.body
+  const { user_id, exp } = req.decoded_refresh_token as TokenPayLoad
+  const result = await usersServices.refreshToken(refresh_token, user_id, exp as number)
+  return res.json({
+    message: USERS_MESSAGE.REFRESH_TOKEN_SUCCESSFULLY,
+    data: result
   })
 }
 
