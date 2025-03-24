@@ -10,6 +10,7 @@ import usersServices from '~/services/users.services'
 import { hashPassword } from '~/utils/crypto'
 import { verifyToken } from '~/utils/jwt'
 import { validate } from '~/utils/validation'
+import { TokenType } from '~/constants/enums'
 
 const passwordSchema: ParamSchema = {
   notEmpty: {
@@ -185,6 +186,7 @@ export const accessTokenValidator = validate(
   checkSchema(
     {
       Authorization: {
+        trim: true,
         custom: {
           options: async (value: string, { req }) => {
             const access_token = (value || '').split(' ')[1]
@@ -197,7 +199,8 @@ export const accessTokenValidator = validate(
             try {
               const decoded_authorization = await verifyToken({
                 token: access_token,
-                secretOrPublicKey: process.env.JWT_SECRET_ACCESS_TOKEN as string
+                secretOrPublicKey: process.env.JWT_SECRET_ACCESS_TOKEN as string,
+                tokenType: TokenType.AccessToken
               })
               ;(req as Request).decoded_authorization = decoded_authorization
             } catch (error) {
@@ -231,7 +234,11 @@ export const refreshTokenValidator = validate(
             }
             try {
               const [decoded_refresh_token, refresh_token] = await Promise.all([
-                verifyToken({ token: value, secretOrPublicKey: process.env.JWT_SECRET_REFRESH_TOKEN as string }),
+                verifyToken({
+                  token: value,
+                  secretOrPublicKey: process.env.JWT_SECRET_REFRESH_TOKEN as string,
+                  tokenType: TokenType.RefreshToken
+                }),
                 databaseService.refreshTokens.findOne({ token: value })
               ])
 
@@ -279,7 +286,8 @@ export const emailVerifyTokenValidator = validate(
             try {
               const decoded_email_verify_token = await verifyToken({
                 token: value,
-                secretOrPublicKey: process.env.JWT_SECRET_EMAIL_VERIRY_TOKEN as string
+                secretOrPublicKey: process.env.JWT_SECRET_EMAIL_VERIRY_TOKEN as string,
+                tokenType: TokenType.EmailVerifyToken
               })
 
               ;(req as Request).decoded_email_verify_token = decoded_email_verify_token

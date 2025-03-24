@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { loginController,
   logoutController,
   oauthController,
+  refreshTokenController,
   registerController,
   verifyEmailController,
   getMyProfileController,
@@ -28,6 +29,7 @@ usersRouter.get('/oauth/google', wrapRequestHandler(oauthController))
 usersRouter.post('/register', registerValidator, wrapRequestHandler(registerController))
 usersRouter.post('/verify-email', emailVerifyTokenValidator, wrapRequestHandler(verifyEmailController))
 usersRouter.post('/logout', accessTokenValidator, refreshTokenValidator, wrapRequestHandler(logoutController))
+usersRouter.post('/refresh-token', refreshTokenValidator, wrapRequestHandler(refreshTokenController))
 usersRouter.get('/myProfile', accessTokenValidator, wrapRequestHandler(getMyProfileController))
 usersRouter.post(
   '/profile/update',
@@ -38,6 +40,5 @@ usersRouter.post(
   ]),
   wrapRequestHandler(updateMyProfileController)
 )
-
 
 export default usersRouter
