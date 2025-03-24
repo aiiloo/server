@@ -3,9 +3,15 @@ import databaseService from './services/database.services'
 import usersRouter from './routes/users.routes'
 import { defaultErrorHanlder } from './middlewares/erros.middlewares'
 import path from 'path'
+import cors from 'cors'
+import { config } from 'dotenv'
+
+config()
 
 const app = express()
-const port = 5000
+app.use(cors())
+const port = process.env.PORT || 4000
+
 
 databaseService.connect()
 app.use(express.json())

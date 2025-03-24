@@ -11,6 +11,13 @@ import path from 'path'
 import fs from 'fs'
 import { UpdateUserProfile } from '~/types/users.types'
 import sharp from 'sharp'
+import { sendEmail } from '~/emails/smtp'
+import axios from 'axios'
+import { ErrorWithStatus } from '~/models/Errors'
+import { USERS_MESSAGE } from '~/constants/messages'
+import HTTP_STATUS from '~/constants/httpStatus'
+import { omit } from 'lodash'
+
 
 class UsersService {
   private signAccessToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
@@ -58,7 +65,48 @@ class UsersService {
   private signAccessAndRefreshToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     return Promise.all([this.signAccessToken({ user_id, verify }), this.signRefreshToken({ user_id, verify })])
   }
-  constructor() {}
+
+  private async getOauthGoogleToken(code: string) {
+    const body = {
+      code,
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      client_secret: process.env.GOOGLE_CLIENT_SECRET,
+      redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+      grant_type: 'authorization_code'
+    }
+
+    const { data } = await axios.post('https://oauth2.googleapis.com/token', body, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    })
+    return data as {
+      id_token: string
+      access_token: string
+    }
+  }
+
+  private async getGoogleUserInfo(access_token: string, id_token: string) {
+    const { data } = await axios.get('https://www.googleapis.com/oauth2/v1/userinfo', {
+      params: {
+        access_token,
+        alt: 'json'
+      },
+      headers: {
+        Authorization: `Bearer ${id_token}`
+      }
+    })
+
+    return data as {
+      id: string
+      email: string
+      verified_email: boolean
+      name: string
+      given_name: string
+      family_name: string
+      picture: string
+    }
+  }
 
   async register(payload: RegisterReqBody) {
     const user_id = new ObjectId()
@@ -83,7 +131,15 @@ class UsersService {
       new RefreshToken({ token: refresh_token, user_id: new ObjectId(user_id) })
     )
 
-    console.log('email_verify_token', email_verify_token)
+    await sendEmail({
+      to: payload.email,
+      subject: 'Verify Your Email',
+      templateName: 'verifyEmail',
+      replacements: {
+        USERNAME: payload.name,
+        VERIFY_LINK: `http://localhost:3000/email-verify?token=${email_verify_token}`
+      }
+    })
     return {
       access_token,
       refresh_token
@@ -109,6 +165,7 @@ class UsersService {
       refresh_token
     }
   }
+
 
   async getMyProfile(user_id: ObjectId | undefined): Promise<User | null> {
     const user = await databaseService.users.findOne({ user_id })
@@ -207,6 +264,94 @@ class UsersService {
     await fs.unlinkSync(filePath)
 
     return `${newName}.jpg`
+  }
+  
+  async oauth(code: string) {
+    const { id_token, access_token } = await this.getOauthGoogleToken(code)
+    const userInfo = await this.getGoogleUserInfo(access_token, id_token)
+    // console.log('UserInfo: ', userInfo)
+    if (!userInfo.verified_email) {
+      throw new ErrorWithStatus({
+        message: USERS_MESSAGE.GMAIL_NOT_VERIFIED,
+        status: HTTP_STATUS.BAD_REQUEST
+      })
+    }
+    const user = await databaseService.users.findOne({ email: userInfo.email })
+    if (user) {
+      const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
+        user_id: user._id.toString(),
+        verify: user.verify
+      })
+
+      await databaseService.refreshTokens.insertOne(
+        new RefreshToken({ token: refresh_token, user_id: new ObjectId(user._id) })
+      )
+
+      return {
+        access_token,
+        refresh_token,
+        newUser: 0,
+        verify: user.verify,
+        userData: omit(user, ['password', 'email_verify_token', 'forgot_password_token'])
+      }
+    } else {
+      const password = Math.random().toString(36).substring(2, 15)
+      const data = await this.register({
+        email: userInfo.email,
+        name: userInfo.name,
+        date_of_birth: new Date().toISOString(),
+        password,
+        comfirm_password: password
+      })
+
+      const user = await databaseService.users.findOneAndUpdate(
+        { email: userInfo.email },
+        { $set: { avatar: userInfo.picture } },
+        { returnDocument: 'after' }
+      )
+
+      return {
+        ...data,
+        newUser: 1,
+        verify: UserVerifyStatus.Unverified,
+        userData: omit(user, ['password', 'email_verify_token', 'forgot_password_token'])
+      }
+    }
+  }
+
+  async verifyEmail(user_id: string) {
+    const [token] = await Promise.all([
+      this.signAccessAndRefreshToken({
+        user_id,
+        verify: UserVerifyStatus.Verified
+      }),
+      databaseService.users.updateOne(
+        { _id: new ObjectId(user_id) },
+        {
+          $set: {
+            email_verify_token: '',
+            verify: UserVerifyStatus.Verified
+            //  updated_at: new Date()
+          },
+          $currentDate: { updated_at: true }
+        }
+      )
+    ])
+    const [access_token, refresh_token] = token
+    await databaseService.refreshTokens.insertOne(
+      new RefreshToken({ token: refresh_token, user_id: new ObjectId(user_id) })
+    )
+    return {
+      access_token,
+      refresh_token
+    }
+  }
+
+  async logout(refresh_token: string) {
+    await databaseService.refreshTokens.deleteOne({ token: refresh_token })
+    return {
+      message: USERS_MESSAGE.LOGOUT_SUCCESSFULLY
+    }
   }
 }
 

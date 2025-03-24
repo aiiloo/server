@@ -1,11 +1,19 @@
 import { Router } from 'express'
-import {
-  getMyProfileController,
-  loginController,
+import { loginController,
+  logoutController,
+  oauthController,
   registerController,
+  verifyEmailController,
+  getMyProfileController,
   updateMyProfileController
 } from '~/controllers/users.controllers'
-import { loginValidator, registerValidator, accessTokenValidator } from '~/middlewares/users.middlewares'
+import {
+  accessTokenValidator,
+  emailVerifyTokenValidator,
+  loginValidator,
+  refreshTokenValidator,
+  registerValidator
+} from '~/middlewares/users.middlewares'
 import { upload } from '~/middlewares/uploadFile.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
 
@@ -16,12 +24,10 @@ usersRouter.get('/', (req, res) => {
 })
 
 usersRouter.post('/login', loginValidator, wrapRequestHandler(loginController))
-usersRouter.post(
-  '/register',
-
-  registerValidator,
-  wrapRequestHandler(registerController)
-)
+usersRouter.get('/oauth/google', wrapRequestHandler(oauthController))
+usersRouter.post('/register', registerValidator, wrapRequestHandler(registerController))
+usersRouter.post('/verify-email', emailVerifyTokenValidator, wrapRequestHandler(verifyEmailController))
+usersRouter.post('/logout', accessTokenValidator, refreshTokenValidator, wrapRequestHandler(logoutController))
 usersRouter.get('/myProfile', accessTokenValidator, wrapRequestHandler(getMyProfileController))
 usersRouter.post(
   '/profile/update',
@@ -32,5 +38,6 @@ usersRouter.post(
   ]),
   wrapRequestHandler(updateMyProfileController)
 )
+
 
 export default usersRouter
