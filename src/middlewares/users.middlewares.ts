@@ -114,7 +114,10 @@ export const loginValidator = validate(
               password: hashPassword(req.body.password)
             })
             if (user == null) {
-              throw new Error(USERS_MESSAGE.EMAIL_OR_PASSWORD_IS_INCORRECT)
+              throw new ErrorWithStatus({
+                message: USERS_MESSAGE.EMAIL_OR_PASSWORD_IS_INCORRECT,
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
             }
             req.user = user
             return true
