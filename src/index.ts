@@ -7,6 +7,9 @@ import cors from 'cors'
 import { config } from 'dotenv'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
+import Conversation from './models/schemas/Conversation.schema'
+import conversationsRouter from './routes/conversations.routes'
+import { ObjectId } from 'mongodb'
 
 config()
 
@@ -21,6 +24,8 @@ app.use(express.json())
 app.use('/images', express.static(path.join(__dirname, 'assets/images')))
 
 app.use('/users', usersRouter)
+
+app.use('/conversations', conversationsRouter)
 
 app.use(defaultErrorHanlder)
 
@@ -44,10 +49,24 @@ io.on('connection', (socket) => {
   }
   console.log('users: ', users)
 
-  socket.on('private message', (data) => {
-    const receiver_socket_id = users[data.to]?.socket_id
-    socket.to(receiver_socket_id).emit('receive private message', {
-      content: data.content,
+  socket.on('send_message', async (data) => {
+    const { receiver_id, sender_id, content } = data.payload
+    const receiver_socket_id = users[receiver_id]?.socket_id
+    if (!receiver_socket_id) {
+      return
+    }
+    const conversations = new Conversation({
+      sender_id: new ObjectId(sender_id),
+      receiver_id: new ObjectId(receiver_id),
+      content: content
+    })
+
+    const result = await databaseService.conversations.insertOne(conversations)
+
+    conversations._id = result.insertedId
+
+    socket.to(receiver_socket_id).emit('receive_message', {
+      payload: conversations,
       from: user_id
     })
   })

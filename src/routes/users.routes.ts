@@ -1,5 +1,6 @@
 import { Router } from 'express'
-import { loginController,
+import {
+  loginController,
   logoutController,
   oauthController,
   refreshTokenController,
