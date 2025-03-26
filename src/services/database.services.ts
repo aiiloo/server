@@ -2,6 +2,7 @@ import { Collection, Db, MongoClient } from 'mongodb'
 import dotenv from 'dotenv'
 import User from '~/models/schemas/User.schema'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
+import Conversation from '~/models/schemas/Conversation.schema'
 
 dotenv.config()
 
@@ -37,6 +38,10 @@ class DatabaseService {
 
   get refreshTokens(): Collection<RefreshToken> {
     return this.db.collection(process.env.DB_REFRESH_TOKEN_COLLECTION as string)
+  }
+
+  get conversations(): Collection<Conversation> {
+    return this.db.collection(process.env.DB_CONVERSATION as string)
   }
 }
 
