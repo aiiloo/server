@@ -11,6 +11,7 @@ import { hashPassword } from '~/utils/crypto'
 import { verifyToken } from '~/utils/jwt'
 import { validate } from '~/utils/validation'
 import { TokenType } from '~/constants/enums'
+import { ObjectId } from 'mongodb'
 
 const passwordSchema: ParamSchema = {
   notEmpty: {
@@ -307,5 +308,37 @@ export const emailVerifyTokenValidator = validate(
       }
     },
     ['body']
+  )
+)
+
+export const verifiedUserValidatior = validate(
+  checkSchema(
+    {
+      receiver_id: {
+        custom: {
+          options: async (value: string, { req }) => {
+            if (!value) {
+              throw new ErrorWithStatus({
+                message: USERS_MESSAGE.USER_ID_IS_REQUIRED,
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+
+            const user = await databaseService.users.findOne({ _id: new ObjectId(value) })
+
+            if (!user) {
+              throw new ErrorWithStatus({
+                message: USERS_MESSAGE.USER_NOT_FOUND,
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+
+            ;(req as Request).user = user
+            return true
+          }
+        }
+      }
+    },
+    ['params']
   )
 )
