@@ -17,7 +17,7 @@ import { ErrorWithStatus } from '~/models/Errors'
 import { USERS_MESSAGE } from '~/constants/messages'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { omit } from 'lodash'
-
+import mediasServices from './medias.services'
 
 class UsersService {
   private signAccessToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
@@ -145,10 +145,13 @@ class UsersService {
 
   async register(payload: RegisterReqBody) {
     const user_id = new ObjectId()
-    const email_verify_token = await this.signEmailVerifyToken({
-      user_id: user_id.toString(),
-      verify: UserVerifyStatus.Unverified
-    })
+    let email_verify_token = ''
+    if (!payload.verify) {
+      email_verify_token = await this.signEmailVerifyToken({
+        user_id: user_id.toString(),
+        verify: UserVerifyStatus.Unverified
+      })
+    }
     await databaseService.users.insertOne(
       new User({
         ...payload,
@@ -166,15 +169,17 @@ class UsersService {
       new RefreshToken({ token: refresh_token, user_id: new ObjectId(user_id) })
     )
 
-    await sendEmail({
-      to: payload.email,
-      subject: 'Verify Your Email',
-      templateName: 'verifyEmail',
-      replacements: {
-        USERNAME: payload.name,
-        VERIFY_LINK: `http://localhost:3000/email-verify?token=${email_verify_token}`
-      }
-    })
+    if (!payload.verify) {
+      await sendEmail({
+        to: payload.email,
+        subject: 'Verify Your Email',
+        templateName: 'verifyEmail',
+        replacements: {
+          USERNAME: payload.name,
+          VERIFY_LINK: `http://localhost:3000/email-verify?token=${email_verify_token}`
+        }
+      })
+    }
     return {
       access_token,
       refresh_token
@@ -200,7 +205,6 @@ class UsersService {
       refresh_token
     }
   }
-
 
   async getMyProfile(user_id: ObjectId | undefined): Promise<User | null> {
     const user = await databaseService.users.findOne({ user_id })
@@ -300,7 +304,7 @@ class UsersService {
 
     return `${newName}.jpg`
   }
-  
+
   async oauth(code: string) {
     const { id_token, access_token } = await this.getOauthGoogleToken(code)
     const userInfo = await this.getGoogleUserInfo(access_token, id_token)
@@ -336,20 +340,29 @@ class UsersService {
         name: userInfo.name,
         date_of_birth: new Date().toISOString(),
         password,
-        comfirm_password: password
+        comfirm_password: password,
+        verify: userInfo.verified_email ? UserVerifyStatus.Verified : UserVerifyStatus.Unverified
       })
+      const user = await databaseService.users.findOne({ email: userInfo.email })
 
-      const user = await databaseService.users.findOneAndUpdate(
+      if (!user) {
+        throw new ErrorWithStatus({
+          message: 'User not found after registration',
+          status: HTTP_STATUS.INTERNAL_SERVER_ERROR
+        })
+      }
+      const localAvatarPath = (await mediasServices.downloadAvatar(userInfo.picture, user._id.toString())) as string
+
+      const updatedUser = await databaseService.users.findOneAndUpdate(
         { email: userInfo.email },
-        { $set: { avatar: userInfo.picture } },
+        { $set: { avatar: localAvatarPath } },
         { returnDocument: 'after' }
       )
-
       return {
         ...data,
         newUser: 1,
-        verify: UserVerifyStatus.Unverified,
-        userData: omit(user, ['password', 'email_verify_token', 'forgot_password_token'])
+        verify: userInfo.verified_email ? UserVerifyStatus.Verified : UserVerifyStatus.Unverified,
+        userData: omit(updatedUser, ['password', 'email_verify_token', 'forgot_password_token'])
       }
     }
   }
