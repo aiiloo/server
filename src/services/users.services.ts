@@ -1,4 +1,4 @@
-import { ObjectId, UpdateFilter } from 'mongodb'
+import { ObjectId, UpdateFilter, UpdateResult } from 'mongodb'
 import { TokenType, UserVerifyStatus } from '~/constants/enums'
 import { RegisterReqBody } from '~/models/requests/User.requests'
 import { signToken } from '~/utils/jwt'
@@ -206,16 +206,20 @@ class UsersService {
     }
   }
 
-  async getMyProfile(user_id: ObjectId | undefined): Promise<User | null> {
-    const user = await databaseService.users.findOne({ user_id })
+  async getMyProfile(user_id: string): Promise<User | null> {
+    const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
     if (user) return user
-    else return null
+    return null
   }
 
-  async updateMyProfile(user_id: ObjectId, data: UpdateUserProfile): Promise<{ message: string }> {
+  async updateMyProfile(user_id: string, data: UpdateUserProfile) {
     const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
-
-    if (!user) return { message: 'user not found' }
+    if (!user) {
+      throw new ErrorWithStatus({
+        message: USERS_MESSAGE.USER_NOT_FOUND,
+        status: HTTP_STATUS.NOT_FOUND
+      })
+    }
 
     if (data.files?.avatar) {
       if (user.avatar) this.deleteFile(user.avatar)
@@ -230,7 +234,10 @@ class UsersService {
         data.files.avatar.filename = await this.uploadImage(data.files?.avatar)
       } else {
         await fs.promises.unlink(data.files?.avatar.path)
-        return { message: 'Error processing image' }
+        throw new ErrorWithStatus({
+          message: USERS_MESSAGE.USER_NOT_FOUND,
+          status: HTTP_STATUS.NOT_FOUND
+        })
       }
     }
 
@@ -247,34 +254,27 @@ class UsersService {
         data.files.cover_photo.filename = await this.uploadImage(data.files?.cover_photo)
       } else {
         await fs.promises.unlink(data.files?.cover_photo.path)
-        return { message: 'Error processing image' }
+        throw new ErrorWithStatus({
+          message: USERS_MESSAGE.INVALID_IMAGE_FORMAT,
+          status: HTTP_STATUS.BAD_REQUEST
+        })
       }
     }
 
     const updateUser: UpdateFilter<User> = {
       $set: {
-        name: data.name,
-        date_of_birth: data.date_of_birth,
-        bio: data.bio,
-        location: data.location,
-        website: data.website,
-        username: data.username,
-        avatar: data.files?.avatar?.filename,
-        cover_photo: data.files?.cover_photo?.filename
+        name: data.name ?? user.name,
+        date_of_birth: data.date_of_birth ?? user.date_of_birth,
+        bio: data.bio ?? user.bio,
+        location: data.location ?? user.location,
+        website: data.website ?? user.website,
+        avatar: data.files?.avatar?.filename ?? user.avatar,
+        cover_photo: data.files?.cover_photo?.filename ?? user.cover_photo
       }
     }
 
-    const result = await databaseService.users.updateOne({ _id: new ObjectId(user_id) }, updateUser)
-
-    if (result.modifiedCount > 0) {
-      return {
-        message: 'Update successfully'
-      }
-    } else {
-      return {
-        message: 'Update failure'
-      }
-    }
+    const result = await databaseService.users.findOneAndUpdate({ _id: new ObjectId(user_id) }, updateUser)
+    return result
   }
 
   async deleteFile(imageUrl: string): Promise<{ message: string }> {
