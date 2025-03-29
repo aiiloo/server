@@ -167,7 +167,7 @@ export const unfollowController = async (req: Request, res: Response) => {
 }
 
 export const getMyProfileController = async (req: Request, res: Response) => {
-  const { user_id } = req.decoded_authorization.user_id
+  const user_id = req.decoded_authorization.user_id
   const result = await usersServices.getMyProfile(user_id)
   if (result)
     return res.status(201).json({
@@ -188,6 +188,9 @@ export const updateMyProfileController = async (
   const user_id = req.decoded_authorization.user_id
   const data: UpdateUserProfile = req.body
 
+  console.log('check data', data)
+  console.log('check user_id', user_id)
+
   if (req.files) {
     const files = req.files as Record<string, Express.Multer.File[]>
 
@@ -203,8 +206,8 @@ export const updateMyProfileController = async (
 
   const result = await usersServices.updateMyProfile(user_id, data)
 
-  return res.status(404).json({
-    message: '',
+  return res.status(200).json({
+    message: 'update user success',
     data: result
   })
 }
