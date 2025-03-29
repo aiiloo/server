@@ -317,23 +317,15 @@ export const verifiedUserValidatior = validate(
       receiver_id: {
         custom: {
           options: async (value: string, { req }) => {
-            if (!value) {
-              throw new ErrorWithStatus({
-                message: USERS_MESSAGE.USER_ID_IS_REQUIRED,
-                status: HTTP_STATUS.UNAUTHORIZED
-              })
+            if (req.params && req.params.receiver_id) {
+              const receiver_id = req?.params.receiver_id
+              if (receiver_id !== value) {
+                throw new ErrorWithStatus({
+                  message: USERS_MESSAGE.USER_NOT_FOUND,
+                  status: HTTP_STATUS.UNAUTHORIZED
+                })
+              }
             }
-
-            const user = await databaseService.users.findOne({ _id: new ObjectId(value) })
-
-            if (!user) {
-              throw new ErrorWithStatus({
-                message: USERS_MESSAGE.USER_NOT_FOUND,
-                status: HTTP_STATUS.UNAUTHORIZED
-              })
-            }
-
-            ;(req as Request).user = user
             return true
           }
         }
