@@ -15,3 +15,15 @@ export enum MediaType {
   Image,
   Video
 }
+
+export enum PostAudience {
+  EveryOne,
+  TwitterCircle
+}
+
+export enum PostType {
+  NewPost,
+  RePost,
+  QuotePost,
+  Comment
+}

@@ -10,7 +10,7 @@ const storage = multer.diskStorage({
     file: Express.Multer.File,
     cb: (error: Error | null, destination: string) => void
   ) {
-    cb(null, path.join(__dirname, '../assets/imagesTem'))
+    cb(null, path.join(__dirname, '../assets/images'))
   },
 
   filename: function (req: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) {
@@ -20,19 +20,20 @@ const storage = multer.diskStorage({
 })
 
 const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  const allowedTypes = ['image/png', 'image/jpg', 'image/jpeg']
-  if (allowedTypes.includes(file.mimetype)) {
-    if (file.mimetype === 'video/mp4' && file.size > 50 * 1024 * 1024) {
-      cb(new Error('Video file size must be less than 50MB!'))
-    } else {
-      cb(null, true)
-    }
-  } else {
-    cb(new Error('Only PNG, JPG and JPEG file formats are allowed!'))
+  const allowedTypes = ['video/mp4', 'image/jpg', 'image/jpeg']
+
+  if (!allowedTypes.includes(file.mimetype)) {
+    return cb(new Error('Only JPG, JPEG, and MP4 files are allowed!'))
   }
+
+  if (file.mimetype === 'video/mp4' && file.size > 50 * 1024 * 1024) {
+    return cb(new Error('Video file size must be less than 50MB!'))
+  }
+
+  cb(null, true)
 }
 
-export const upload = multer({
+export const uploads = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: { fileSize: 50 * 1024 * 1024 }
