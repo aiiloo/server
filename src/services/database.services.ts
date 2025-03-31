@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import User from '~/models/schemas/User.schema'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import Conversation from '~/models/schemas/Conversation.schema'
+import Follower from '~/models/schemas/Follower.schema'
 import Post from '~/models/schemas/Tweet.schema'
 
 dotenv.config()
@@ -33,6 +34,10 @@ class DatabaseService {
     // }
   }
 
+  indexUsers() {
+    this.users.createIndex({ name: 'text', username: 'text' })
+  }
+
   get users(): Collection<User> {
     return this.db.collection(process.env.DB_USERS_COLLECTION as string)
   }
@@ -45,6 +50,9 @@ class DatabaseService {
     return this.db.collection(process.env.DB_CONVERSATION as string)
   }
 
+  get followers(): Collection<Follower> {
+    return this.db.collection(process.env.DB_FOLLOWERS as string)
+  }
   get posts(): Collection<Post> {
     return this.db.collection(process.env.DB_POSTS_COLLECTION as string)
   }

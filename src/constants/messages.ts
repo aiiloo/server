@@ -66,7 +66,14 @@ export const USERS_MESSAGE = {
   PASSWORD_CHANGE_SUCCESSFULLY: 'Password change successfully',
   GMAIL_NOT_VERIFIED: 'Gmail not verified',
   USER_ID_IS_REQUIRED: 'User id is required',
-  INVALID_IMAGE_FORMAT: 'Invalid image format'
+  INVALID_IMAGE_FORMAT: 'Invalid image format',
+  USER_IS_FOLLOWER: 'User is follower',
+  GET_FOLLOWERS_SUCCESSFULLY: 'Get followers successfully',
+  FOLLOWER_NOT_FOUND: 'Follower not found',
+  REMOVE_FOLLOWER_SUCCESSFULLY: 'Remove follower successfully',
+  USER_IS_NOT_FOLLOWER: 'User is not follower',
+  SEARCH_SUCCESSFULLY: 'Search successfully',
+  GET_MUTUAL_FOLLOWERS_SUCCESSFULLY: 'Get mutual followers successfully'
 } as const
 
 export const POSTS_MESSAGE = {

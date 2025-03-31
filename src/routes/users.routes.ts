@@ -7,7 +7,8 @@ import {
   registerController,
   verifyEmailController,
   getMyProfileController,
-  updateMyProfileController
+  updateMyProfileController,
+  searchController
 } from '~/controllers/users.controllers'
 import {
   accessTokenValidator,
@@ -32,6 +33,7 @@ usersRouter.post('/verify-email', emailVerifyTokenValidator, wrapRequestHandler(
 usersRouter.post('/logout', accessTokenValidator, refreshTokenValidator, wrapRequestHandler(logoutController))
 usersRouter.post('/refresh-token', refreshTokenValidator, wrapRequestHandler(refreshTokenController))
 usersRouter.get('/myProfile', accessTokenValidator, wrapRequestHandler(getMyProfileController))
+usersRouter.post('/search', wrapRequestHandler(searchController))
 usersRouter.post(
   '/profile/update',
   accessTokenValidator,

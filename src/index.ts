@@ -11,6 +11,7 @@ import { Server } from 'socket.io'
 import Conversation from './models/schemas/Conversation.schema'
 import conversationsRouter from './routes/conversations.routes'
 import { ObjectId } from 'mongodb'
+import followersRouter from './routes/followers.routes'
 
 config()
 
@@ -19,7 +20,9 @@ const httpServer = createServer(app)
 app.use(cors())
 const port = process.env.PORT || 4000
 
-databaseService.connect()
+databaseService.connect().then(() => {
+  databaseService.indexUsers()
+})
 app.use(express.json())
 
 app.use('/assets/images', express.static(path.join(__dirname, '../src/assets/images')))
@@ -28,6 +31,8 @@ app.use('/users', usersRouter)
 app.use('/posts', postsRouter)
 
 app.use('/conversations', conversationsRouter)
+
+app.use('/followers', followersRouter)
 
 app.use(defaultErrorHanlder)
 
