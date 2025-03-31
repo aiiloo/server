@@ -4,6 +4,7 @@ import User from '~/models/schemas/User.schema'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import Conversation from '~/models/schemas/Conversation.schema'
 import Follower from '~/models/schemas/Follower.schema'
+import Post from '~/models/schemas/Tweet.schema'
 
 dotenv.config()
 
@@ -51,6 +52,9 @@ class DatabaseService {
 
   get followers(): Collection<Follower> {
     return this.db.collection(process.env.DB_FOLLOWERS as string)
+  }
+  get posts(): Collection<Post> {
+    return this.db.collection(process.env.DB_POSTS_COLLECTION as string)
   }
 }
 

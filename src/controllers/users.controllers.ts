@@ -174,9 +174,6 @@ export const updateMyProfileController = async (
   const user_id = req.decoded_authorization.user_id
   const data: UpdateUserProfile = req.body
 
-  console.log('check data', data)
-  console.log('check user_id', user_id)
-
   if (req.files) {
     const files = req.files as Record<string, Express.Multer.File[]>
 

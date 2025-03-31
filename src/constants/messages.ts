@@ -75,3 +75,20 @@ export const USERS_MESSAGE = {
   SEARCH_SUCCESSFULLY: 'Search successfully',
   GET_MUTUAL_FOLLOWERS_SUCCESSFULLY: 'Get mutual followers successfully'
 } as const
+
+export const POSTS_MESSAGE = {
+  GET_POSTS_SUCCESSFULLY: 'Get posts successfully',
+  GET_POSTS_FAILURE: 'Get posts failure',
+  GET_POST_SUCCESSFULLY: 'Get post successfully',
+  GET_POST_FAILURE: 'Get post failure',
+  CREATE_POST_SUCCESSFULLY: 'Create post successfully',
+  CREATE_POST_FAILURE: 'Create post failure',
+  UPDATE_POST_SUCCESSFULLY: 'Update post successfully',
+  UPDATE_POST_FAILURE: 'Update post failure',
+  DELETE_POST_SUCCESSFULLY: 'Delete post successfully',
+  DELETE_POST_FAILURE: 'Delete post failure',
+  VIDEOS_LIMIT: 'Maximum of 1 video allowed per post',
+  IMAGES_LIMIT: 'Maximum of 5 images allowed per post',
+  CONTENT_IS_REQUIRED: 'Content is required',
+  VIDEO_OR_IMAGE: 'Maximum of 1 video or 5 images allowed per post'
+} as const

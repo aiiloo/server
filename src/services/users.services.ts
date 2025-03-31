@@ -19,6 +19,7 @@ import { USERS_MESSAGE } from '~/constants/messages'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { omit } from 'lodash'
 import mediasServices from './medias.services'
+import { log } from 'console'
 
 class UsersService {
   private signAccessToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
@@ -216,68 +217,71 @@ class UsersService {
   }
 
   async updateMyProfile(user_id: string, data: UpdateUserProfile) {
-    const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
-    if (!user) {
-      throw new ErrorWithStatus({
-        message: USERS_MESSAGE.USER_NOT_FOUND,
-        status: HTTP_STATUS.NOT_FOUND
-      })
-    }
-
-    if (data.files?.avatar) {
-      if (user.avatar) this.deleteFile(user.avatar)
-      const ext = path.extname(data.files?.avatar.filename).toLowerCase()
-      if (ext === '.jpg') {
-        const filePath = data.files?.avatar.path
-        const fileName = path.basename(filePath)
-        const newFilePath = path.join(__dirname, '../assets/images/', fileName)
-
-        await fs.promises.rename(data.files?.avatar.path, newFilePath)
-      } else if (ext === '.png' || ext === '.jpeg') {
-        data.files.avatar.filename = await this.uploadImage(data.files?.avatar)
-      } else {
-        await fs.promises.unlink(data.files?.avatar.path)
+    try {
+      const user = await databaseService.users.findOne({ _id: new ObjectId(user_id) })
+      if (!user) {
         throw new ErrorWithStatus({
           message: USERS_MESSAGE.USER_NOT_FOUND,
           status: HTTP_STATUS.NOT_FOUND
         })
       }
-    }
 
-    if (data.files?.cover_photo) {
-      if (user.avatar) this.deleteFile(user.avatar)
-      const ext = path.extname(data.files?.cover_photo.filename).toLowerCase()
-      if (ext === '.jpg') {
-        const filePath = data.files?.cover_photo.path
-        const fileName = path.basename(filePath)
-        const newFilePath = path.join(__dirname, '../assets/images/', fileName)
+      if (data.files?.avatar) {
+        if (user.avatar) this.deleteFile(user.avatar)
+        const ext = path.extname(data.files?.avatar.filename).toLowerCase()
+        if (ext === '.jpg') {
+          const filePath = data.files?.avatar.path
+          const fileName = path.basename(filePath)
+          const newFilePath = path.join(__dirname, '../assets/images/', fileName)
 
-        await fs.promises.rename(data.files?.cover_photo.path, newFilePath)
-      } else if (ext === '.png' || ext === '.jpeg') {
-        data.files.cover_photo.filename = await this.uploadImage(data.files?.cover_photo)
-      } else {
-        await fs.promises.unlink(data.files?.cover_photo.path)
-        throw new ErrorWithStatus({
-          message: USERS_MESSAGE.INVALID_IMAGE_FORMAT,
-          status: HTTP_STATUS.BAD_REQUEST
-        })
+          await fs.promises.rename(data.files?.avatar.path, newFilePath)
+        }
+        if (ext === '.png' || ext === '.jpeg') {
+          data.files.avatar.filename = await this.uploadImage(data.files?.avatar)
+        }
+      }
+
+      if (data.files?.cover_photo) {
+        if (user.avatar) this.deleteFile(user.avatar)
+        const ext = path.extname(data.files?.cover_photo.filename).toLowerCase()
+        if (ext === '.jpg') {
+          const filePath = data.files?.cover_photo.path
+          const fileName = path.basename(filePath)
+          const newFilePath = path.join(__dirname, '../assets/images/', fileName)
+
+          await fs.promises.rename(data.files?.cover_photo.path, newFilePath)
+        } else if (ext === '.png' || ext === '.jpeg') {
+          data.files.cover_photo.filename = await this.uploadImage(data.files?.cover_photo)
+        } else {
+          await fs.promises.unlink(data.files?.cover_photo.path)
+          throw new ErrorWithStatus({
+            message: USERS_MESSAGE.INVALID_IMAGE_FORMAT,
+            status: HTTP_STATUS.BAD_REQUEST
+          })
+        }
+      }
+
+      const updateUser: UpdateFilter<User> = {
+        $set: {
+          name: data.name ?? user.name,
+          date_of_birth: data.date_of_birth ?? user.date_of_birth,
+          bio: data.bio ?? user.bio,
+          location: data.location ?? user.location,
+          website: data.website ?? user.website,
+          avatar: data.files?.avatar?.filename ?? user.avatar,
+          cover_photo: data.files?.cover_photo?.filename ?? user.cover_photo
+        }
+      }
+
+      const result = await databaseService.users.findOneAndUpdate({ _id: new ObjectId(user_id) }, updateUser)
+      return result
+    } catch (error) {
+      console.log(error)
+      if (data.files) {
+        if (data.files.avatar) fs.unlinkSync(data.files.avatar.path)
+        if (data.files.cover_photo) fs.unlinkSync(data.files.cover_photo.path)
       }
     }
-
-    const updateUser: UpdateFilter<User> = {
-      $set: {
-        name: data.name ?? user.name,
-        date_of_birth: data.date_of_birth ?? user.date_of_birth,
-        bio: data.bio ?? user.bio,
-        location: data.location ?? user.location,
-        website: data.website ?? user.website,
-        avatar: data.files?.avatar?.filename ?? user.avatar,
-        cover_photo: data.files?.cover_photo?.filename ?? user.cover_photo
-      }
-    }
-
-    const result = await databaseService.users.findOneAndUpdate({ _id: new ObjectId(user_id) }, updateUser)
-    return result
   }
 
   async deleteFile(imageUrl: string): Promise<{ message: string }> {

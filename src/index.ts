@@ -1,6 +1,7 @@
 import express from 'express'
 import databaseService from './services/database.services'
 import usersRouter from './routes/users.routes'
+import postsRouter from './routes/post.routes'
 import { defaultErrorHanlder } from './middlewares/erros.middlewares'
 import path from 'path'
 import cors from 'cors'
@@ -27,6 +28,7 @@ app.use(express.json())
 app.use('/assets/images', express.static(path.join(__dirname, '../src/assets/images')))
 
 app.use('/users', usersRouter)
+app.use('/posts', postsRouter)
 
 app.use('/conversations', conversationsRouter)
 
