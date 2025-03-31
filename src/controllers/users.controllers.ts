@@ -136,33 +136,19 @@ export const changePasswordController = async (req: Request, res: Response) => {
   })
 }
 
-export const getMeController = async (req: Request, res: Response) => {
-  return res.json({
-    message: 'Get me success'
-  })
-}
+export const searchController = async (req: Request, res: Response) => {
+  const { search_key } = req.body
+  const limit = Number(req.query.limit)
+  const page = Number(req.query.page)
 
-export const updateMeController = async (req: Request, res: Response) => {
-  return res.json({
-    message: 'Update me success'
+  const result = await usersServices.search({
+    searchKey: search_key,
+    limit: limit,
+    page: page
   })
-}
-
-export const getProfileController = async (req: Request, res: Response) => {
   return res.json({
-    message: 'Get profile success'
-  })
-}
-
-export const followController = async (req: Request, res: Response) => {
-  return res.json({
-    message: 'Follow success'
-  })
-}
-
-export const unfollowController = async (req: Request, res: Response) => {
-  return res.json({
-    message: 'Unfollow success'
+    message: USERS_MESSAGE.SEARCH_SUCCESSFULLY,
+    data: result
   })
 }
 

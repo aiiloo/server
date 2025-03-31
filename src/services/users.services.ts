@@ -1,4 +1,5 @@
 import { ObjectId, UpdateFilter, UpdateResult } from 'mongodb'
+import { v4 as uuidv4 } from 'uuid'
 import { TokenType, UserVerifyStatus } from '~/constants/enums'
 import { RegisterReqBody } from '~/models/requests/User.requests'
 import { signToken } from '~/utils/jwt'
@@ -152,13 +153,15 @@ class UsersService {
         verify: UserVerifyStatus.Unverified
       })
     }
+    const username = `user_${uuidv4().slice(0, 8)}`
     await databaseService.users.insertOne(
       new User({
         ...payload,
         _id: user_id,
         email_verify_token,
         date_of_birth: new Date(payload.date_of_birth),
-        password: hashPassword(payload.password)
+        password: hashPassword(payload.password),
+        username
       })
     )
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
@@ -422,6 +425,25 @@ class UsersService {
     return {
       access_token,
       refresh_token
+    }
+  }
+
+  async search({ searchKey, limit, page }: { searchKey: string; limit: number; page: number }) {
+    const match = {
+      $or: [{ name: { $regex: searchKey, $options: 'i' } }, { username: { $regex: searchKey, $options: 'i' } }]
+    }
+
+    const users = await databaseService.users
+      .find(match)
+      .skip(limit * (page - 1))
+      .limit(limit)
+      .toArray()
+
+    const total = await databaseService.users.countDocuments(match)
+
+    return {
+      users,
+      total
     }
   }
 }
