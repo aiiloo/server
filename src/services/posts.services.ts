@@ -103,14 +103,30 @@ export class PostService {
   /**
    * Gets a post by its ID
    */
-  async getPostById(postId: string): Promise<Post | null> {
-    // Here you would typically fetch from the database
-    // const db = await getDb();
-    // const post = await db.collection('posts').findOne({ _id: new ObjectId(postId) });
-    // if (!post) return null;
-    // return new Post(post as PostAType);
+  async getPost() {
+    const posts = await databaseService.posts
+      .aggregate([
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'user_id',
+            foreignField: '_id',
+            as: 'user'
+          }
+        },
+        {
+          $unwind: '$user'
+        }
+      ])
+      .toArray()
 
-    return null // Placeholder
+    if (!posts) {
+      throw new ErrorWithStatus({
+        message: POSTS_MESSAGE.GET_POSTS_FAILURE,
+        status: HTTP_STATUS.INTERNAL_SERVER_ERROR
+      })
+    }
+    return posts // Placeholder
   }
 
   /**
@@ -119,15 +135,15 @@ export class PostService {
    */
   async deletePost(postId: string, userId: string): Promise<boolean> {
     // Fetch the post first to check ownership
-    const post = await this.getPostById(postId)
+    // const post = await this.getPostById(postId)
 
-    if (!post) {
-      throw new Error('Post not found')
-    }
+    // if (!post) {
+    //   throw new Error('Post not found')
+    // }
 
-    if (post.user_id.toString() !== userId) {
-      throw new Error('Unauthorized to delete this post')
-    }
+    // if (post.user_id.toString() !== userId) {
+    //   throw new Error('Unauthorized to delete this post')
+    // }
 
     // Delete from database
     // const db = await getDb();

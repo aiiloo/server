@@ -91,5 +91,6 @@ export const POSTS_MESSAGE = {
   IMAGES_LIMIT: 'Maximum of 5 images allowed per post',
   CONTENT_IS_REQUIRED: 'Content is required',
   VIDEO_OR_IMAGE: 'Maximum of 1 video or 5 images allowed per post',
-  ERROR_CREATING_POST: 'Error creating post'
+  ERROR_CREATING_POST: 'Error creating post',
+  POST_NOT_FOUND: 'Post not found'
 } as const
