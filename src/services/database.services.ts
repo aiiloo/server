@@ -4,7 +4,7 @@ import User from '~/models/schemas/User.schema'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import Conversation from '~/models/schemas/Conversation.schema'
 import Follower from '~/models/schemas/Follower.schema'
-import Post from '~/models/schemas/Tweet.schema'
+import Post from '~/models/schemas/Post.schema'
 
 dotenv.config()
 

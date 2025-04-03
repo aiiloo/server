@@ -14,7 +14,7 @@ export interface PostAType {
   content: string
   parent_id: null | ObjectId
   medias: Media[]
-  guest_views: number
+  // guest_views: number
   user_views: number
   created_at?: Date
   updated_at?: Date
@@ -28,21 +28,21 @@ export default class Post {
   content: string
   parent_id: null | ObjectId
   medias: Media[]
-  guest_views: number
+  // guest_views: number
   user_views: number
   created_at?: Date
   updated_at?: Date
-  constructor(tweet: PostAType) {
-    this._id = tweet._id
-    this.user_id = tweet.user_id
-    this.type = tweet.type
-    this.audience = tweet.audience
-    this.content = tweet.content
-    this.parent_id = tweet.parent_id
-    this.medias = tweet.medias
-    this.guest_views = tweet.guest_views
-    this.user_views = tweet.user_views
-    this.created_at = tweet.created_at
-    this.updated_at = tweet.updated_at
+  constructor(post: PostAType) {
+    this._id = post._id
+    this.user_id = post.user_id
+    this.type = post.type
+    this.audience = post.audience
+    this.content = post.content
+    this.parent_id = post.parent_id
+    this.medias = post.medias
+    // this.guest_views = post.guest_views
+    this.user_views = post.user_views
+    this.created_at = post.created_at
+    this.updated_at = post.updated_at
   }
 }

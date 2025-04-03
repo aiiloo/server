@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 import { PostAudience, PostType } from '~/constants/enums'
-import { Media } from '../schemas/Tweet.schema'
+import { Media } from '../schemas/Post.schema'
 
 export interface NewPost {
   type: PostType.NewPost

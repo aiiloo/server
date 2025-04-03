@@ -4,7 +4,7 @@ import HTTP_STATUS from '~/constants/httpStatus'
 import { POSTS_MESSAGE } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Errors'
 import { NewPost } from '~/models/requests/Post.requests'
-import Post, { Media, PostAType } from '~/models/schemas/Tweet.schema'
+import Post, { Media, PostAType } from '~/models/schemas/Post.schema'
 import databaseService from './database.services'
 import fs from 'fs'
 import usersServices from './users.services'
@@ -19,22 +19,33 @@ export class PostService {
     this.validateMediaLimits(postData.medias)
 
     // Create the post object
-    const postToCreate: PostAType = {
-      user_id: new ObjectId(user_id),
-      type: PostType.NewPost,
-      audience: postData.audience,
-      content: postData.content,
-      parent_id: null,
-      medias: postData.medias,
-      guest_views: 0,
-      user_views: 0,
-      created_at: new Date(),
-      updated_at: new Date()
+    try {
+      const postToCreate: PostAType = {
+        user_id: new ObjectId(user_id),
+        type: PostType.NewPost,
+        audience: Number(postData.audience),
+        content: postData.content,
+        parent_id: null,
+        medias: postData.medias,
+        // guest_views: 0,
+        user_views: 0,
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+
+      await databaseService.posts.insertOne(postToCreate)
+
+      return new Post(postToCreate)
+    } catch (error) {
+      console.log(error)
+      for (let i = 0; i < postData.medias.length; i++) {
+        usersServices.deleteFile(postData.medias[i].url)
+      }
+      throw new ErrorWithStatus({
+        message: POSTS_MESSAGE.ERROR_CREATING_POST,
+        status: HTTP_STATUS.INTERNAL_SERVER_ERROR
+      })
     }
-
-    await databaseService.posts.insertOne(postToCreate)
-
-    return new Post(postToCreate)
   }
 
   /**
