@@ -90,5 +90,6 @@ export const POSTS_MESSAGE = {
   VIDEOS_LIMIT: 'Maximum of 1 video allowed per post',
   IMAGES_LIMIT: 'Maximum of 5 images allowed per post',
   CONTENT_IS_REQUIRED: 'Content is required',
-  VIDEO_OR_IMAGE: 'Maximum of 1 video or 5 images allowed per post'
+  VIDEO_OR_IMAGE: 'Maximum of 1 video or 5 images allowed per post',
+  ERROR_CREATING_POST: 'Error creating post'
 } as const
