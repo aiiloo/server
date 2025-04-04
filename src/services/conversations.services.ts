@@ -1,5 +1,7 @@
 import { ObjectId } from 'mongodb'
 import databaseService from './database.services'
+import Conversation, { ConversationType } from '~/models/schemas/Conversation.schema'
+import { ConversationSocketType } from '~/socket/chat.socket'
 
 class ConversationsService {
   async getConverstations({
@@ -38,6 +40,19 @@ class ConversationsService {
       conversations,
       total
     }
+  }
+
+  async createConversation({ sender_id, receiver_id, content, medias }: ConversationSocketType) {
+    const conversation = new Conversation({
+      sender_id: new ObjectId(sender_id),
+      receiver_id: new ObjectId(receiver_id),
+      content,
+      medias
+    })
+    const result = await databaseService.conversations.insertOne(conversation)
+    conversation._id = result.insertedId
+
+    return conversation
   }
 }
 
