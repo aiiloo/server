@@ -1,3 +1,5 @@
+import { FileType } from '~/utils/file'
+
 export enum UserVerifyStatus {
   Unverified, // chưa xác thực email, mặc định = 0
   Verified, // đã xác thực email
@@ -9,6 +11,11 @@ export enum TokenType {
   RefreshToken,
   ForgotPasswordToken,
   EmailVerifyToken
+}
+
+export interface Media {
+  url: string
+  type: MediaType // video, image
 }
 
 export enum MediaType {
@@ -26,4 +33,10 @@ export enum PostType {
   RePost,
   QuotePost,
   Comment
+}
+
+export interface MediaConversationType {
+  url: string
+  type: FileType
+  name?: string
 }

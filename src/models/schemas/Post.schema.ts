@@ -1,10 +1,5 @@
 import { ObjectId } from 'mongodb'
-import { MediaType, PostAudience, PostType } from '~/constants/enums'
-
-export interface Media {
-  url: string
-  type: MediaType // video, image
-}
+import { Media, MediaType, PostAudience, PostType } from '~/constants/enums'
 
 export interface PostAType {
   _id?: ObjectId
