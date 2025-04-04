@@ -49,7 +49,6 @@ class FollowersService {
 
   async getMutualFollowers(user_id: string, limit: number, page: number) {
     const objectId = new ObjectId(user_id)
-
     const result = await databaseService.followers
       .aggregate([
         // Tìm tất cả người đang follow user_id
