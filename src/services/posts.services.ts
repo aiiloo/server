@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 import { MediaType, PostAudience, PostType } from '~/constants/enums'
 import HTTP_STATUS from '~/constants/httpStatus'
-import { POSTS_MESSAGE } from '~/constants/messages'
+import { POSTS_MESSAGE, USERS_MESSAGE } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Errors'
 import { NewPost } from '~/models/requests/Post.requests'
 import Post, { Media, PostAType } from '~/models/schemas/Post.schema'
@@ -103,14 +103,71 @@ export class PostService {
   /**
    * Gets a post by its ID
    */
-  async getPostById(postId: string): Promise<Post | null> {
-    // Here you would typically fetch from the database
-    // const db = await getDb();
-    // const post = await db.collection('posts').findOne({ _id: new ObjectId(postId) });
-    // if (!post) return null;
-    // return new Post(post as PostAType);
+  async getPost() {
+    const posts = await databaseService.posts
+      .aggregate([
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'user_id',
+            foreignField: '_id',
+            as: 'user'
+          }
+        },
+        {
+          $unwind: '$user'
+        }
+      ])
+      .toArray()
 
-    return null // Placeholder
+    if (!posts) {
+      throw new ErrorWithStatus({
+        message: POSTS_MESSAGE.GET_POSTS_FAILURE,
+        status: HTTP_STATUS.INTERNAL_SERVER_ERROR
+      })
+    }
+    return posts // Placeholder
+  }
+
+  async getPostsByUsername(username: string) {
+    // Tìm user theo username
+    const user = await databaseService.users.findOne({ username })
+
+    if (!user) {
+      throw new ErrorWithStatus({
+        message: USERS_MESSAGE.USER_NOT_FOUND,
+        status: HTTP_STATUS.NOT_FOUND
+      })
+    }
+
+    // Lấy bài post của user
+    const posts = await databaseService.posts
+      .aggregate([
+        {
+          $match: { user_id: user._id } // Lọc theo user_id
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'user_id',
+            foreignField: '_id',
+            as: 'user'
+          }
+        },
+        {
+          $unwind: '$user'
+        }
+      ])
+      .toArray()
+
+    if (!posts) {
+      throw new ErrorWithStatus({
+        message: POSTS_MESSAGE.GET_POSTS_FAILURE,
+        status: HTTP_STATUS.INTERNAL_SERVER_ERROR
+      })
+    }
+
+    return posts
   }
 
   /**
@@ -119,15 +176,15 @@ export class PostService {
    */
   async deletePost(postId: string, userId: string): Promise<boolean> {
     // Fetch the post first to check ownership
-    const post = await this.getPostById(postId)
+    // const post = await this.getPostById(postId)
 
-    if (!post) {
-      throw new Error('Post not found')
-    }
+    // if (!post) {
+    //   throw new Error('Post not found')
+    // }
 
-    if (post.user_id.toString() !== userId) {
-      throw new Error('Unauthorized to delete this post')
-    }
+    // if (post.user_id.toString() !== userId) {
+    //   throw new Error('Unauthorized to delete this post')
+    // }
 
     // Delete from database
     // const db = await getDb();

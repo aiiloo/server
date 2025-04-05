@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { accessTokenValidator } from '~/middlewares/users.middlewares'
 import { wrapRequestHandler } from '~/utils/handlers'
 import { uploads } from '~/middlewares/uploadFileOrVideo.middleware'
-import { createPost } from '~/controllers/posts.controllers'
+import { createPost, getPostController, getPostsByUsernameController } from '~/controllers/posts.controllers'
 
 // Khởi tạo router cho posts
 const postsRouter = Router()
@@ -14,6 +14,8 @@ postsRouter.post(
   uploads.fields([{ name: 'medias', maxCount: 5 }]),
   wrapRequestHandler(createPost)
 )
+postsRouter.get('/all-post', accessTokenValidator, wrapRequestHandler(getPostController))
+postsRouter.get('/your-post/:username', accessTokenValidator, wrapRequestHandler(getPostsByUsernameController))
 
 // Route để lấy bài đăng theo ID
 // postsRouter.get('/:id', wrapRequestHandler(postController.getPost.bind(postController)))

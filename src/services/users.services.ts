@@ -450,6 +450,12 @@ class UsersService {
       total
     }
   }
+
+  async getProfileByUsername(username: string) {
+    const user = await databaseService.users.findOne({ username: username })
+    if (user) return user
+    return null
+  }
 }
 
 const usersServices = new UsersService()

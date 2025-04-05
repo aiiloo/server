@@ -13,7 +13,7 @@ import fs from 'fs'
  * POST /posts
  */
 export const createPost = async (req: Request<ParamsDictionary, any, ReqPost>, res: Response) => {
-  const { user_id } = req.decoded_authorization.user_id
+  const { user_id } = req.decoded_authorization
   const { audience = PostAudience.EveryOne, content } = req.body
   const files = req.files as Express.Multer.File[] | any
 
@@ -48,31 +48,31 @@ export const createPost = async (req: Request<ParamsDictionary, any, ReqPost>, r
  * Get post by ID
  * GET /posts/:id
  */
-//   async getPost(req: Request, res: Response) {
-//     try {
-//       const { id } = req.params
+export const getPostController = async (req: Request, res: Response) => {
+  const posts = await postService.getPost()
 
-//       if (!ObjectId.isValid(id)) {
-//         return res.status(400).json({ message: 'ID bài đăng không hợp lệ' })
-//       }
+  if (!posts) {
+    return res.status(404).json({ message: POSTS_MESSAGE.POST_NOT_FOUND })
+  }
 
-//       const post = await this.postService.getPostById(id)
+  return res.status(200).json({
+    message: POSTS_MESSAGE.GET_POSTS_SUCCESSFULLY,
+    data: posts
+  })
+}
 
-//       if (!post) {
-//         return res.status(404).json({ message: 'Không tìm thấy bài đăng' })
-//       }
+export const getPostsByUsernameController = async (req: Request, res: Response) => {
+  const username = req.params.username as string
+  const posts = await postService.getPostsByUsername(username)
+  if (!posts) {
+    return res.status(404).json({ message: POSTS_MESSAGE.POST_NOT_FOUND })
+  }
 
-//       return res.status(200).json({
-//         message: 'Lấy bài đăng thành công',
-//         data: post
-//       })
-//     } catch (error: any) {
-//       console.error('Get post error:', error)
-//       return res.status(500).json({
-//         message: 'Có lỗi xảy ra khi lấy thông tin bài đăng'
-//       })
-//     }
-//   }
+  return res.status(200).json({
+    message: POSTS_MESSAGE.GET_POSTS_SUCCESSFULLY,
+    data: posts
+  })
+}
 
 //   /**
 //    * Delete post by ID
