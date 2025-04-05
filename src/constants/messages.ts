@@ -73,7 +73,9 @@ export const USERS_MESSAGE = {
   REMOVE_FOLLOWER_SUCCESSFULLY: 'Remove follower successfully',
   USER_IS_NOT_FOLLOWER: 'User is not follower',
   SEARCH_SUCCESSFULLY: 'Search successfully',
-  GET_MUTUAL_FOLLOWERS_SUCCESSFULLY: 'Get mutual followers successfully'
+  GET_MUTUAL_FOLLOWERS_SUCCESSFULLY: 'Get mutual followers successfully',
+  GET_PROFILE_BY_USERNAME_SUCCESSFULLY: 'Get profile by username successfully',
+  GET_PROFILE_BY_USERNAME_FAILURE: 'Get profile by username failure'
 } as const
 
 export const POSTS_MESSAGE = {
@@ -91,5 +93,6 @@ export const POSTS_MESSAGE = {
   IMAGES_LIMIT: 'Maximum of 5 images allowed per post',
   CONTENT_IS_REQUIRED: 'Content is required',
   VIDEO_OR_IMAGE: 'Maximum of 1 video or 5 images allowed per post',
-  ERROR_CREATING_POST: 'Error creating post'
+  ERROR_CREATING_POST: 'Error creating post',
+  POST_NOT_FOUND: 'Post not found'
 } as const
