@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 import { MediaType, PostAudience, PostType } from '~/constants/enums'
 import HTTP_STATUS from '~/constants/httpStatus'
-import { POSTS_MESSAGE } from '~/constants/messages'
+import { POSTS_MESSAGE, USERS_MESSAGE } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Errors'
 import { NewPost } from '~/models/requests/Post.requests'
 import Post, { Media, PostAType } from '~/models/schemas/Post.schema'
@@ -127,6 +127,47 @@ export class PostService {
       })
     }
     return posts // Placeholder
+  }
+
+  async getPostsByUsername(username: string) {
+    // Tìm user theo username
+    const user = await databaseService.users.findOne({ username })
+
+    if (!user) {
+      throw new ErrorWithStatus({
+        message: USERS_MESSAGE.USER_NOT_FOUND,
+        status: HTTP_STATUS.NOT_FOUND
+      })
+    }
+
+    // Lấy bài post của user
+    const posts = await databaseService.posts
+      .aggregate([
+        {
+          $match: { user_id: user._id } // Lọc theo user_id
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'user_id',
+            foreignField: '_id',
+            as: 'user'
+          }
+        },
+        {
+          $unwind: '$user'
+        }
+      ])
+      .toArray()
+
+    if (!posts) {
+      throw new ErrorWithStatus({
+        message: POSTS_MESSAGE.GET_POSTS_FAILURE,
+        status: HTTP_STATUS.INTERNAL_SERVER_ERROR
+      })
+    }
+
+    return posts
   }
 
   /**

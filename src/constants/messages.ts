@@ -73,7 +73,9 @@ export const USERS_MESSAGE = {
   REMOVE_FOLLOWER_SUCCESSFULLY: 'Remove follower successfully',
   USER_IS_NOT_FOLLOWER: 'User is not follower',
   SEARCH_SUCCESSFULLY: 'Search successfully',
-  GET_MUTUAL_FOLLOWERS_SUCCESSFULLY: 'Get mutual followers successfully'
+  GET_MUTUAL_FOLLOWERS_SUCCESSFULLY: 'Get mutual followers successfully',
+  GET_PROFILE_BY_USERNAME_SUCCESSFULLY: 'Get profile by username successfully',
+  GET_PROFILE_BY_USERNAME_FAILURE: 'Get profile by username failure'
 } as const
 
 export const POSTS_MESSAGE = {

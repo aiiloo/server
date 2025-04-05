@@ -8,7 +8,8 @@ import {
   verifyEmailController,
   getMyProfileController,
   updateMyProfileController,
-  searchController
+  searchController,
+  getProfileByUsernameController
 } from '~/controllers/users.controllers'
 import {
   accessTokenValidator,
@@ -43,5 +44,6 @@ usersRouter.post(
   ]),
   wrapRequestHandler(updateMyProfileController)
 )
+usersRouter.get('/profile/:username', accessTokenValidator, wrapRequestHandler(getProfileByUsernameController))
 
 export default usersRouter

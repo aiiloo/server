@@ -61,6 +61,19 @@ export const getPostController = async (req: Request, res: Response) => {
   })
 }
 
+export const getPostsByUsernameController = async (req: Request, res: Response) => {
+  const username = req.params.username as string
+  const posts = await postService.getPostsByUsername(username)
+  if (!posts) {
+    return res.status(404).json({ message: POSTS_MESSAGE.POST_NOT_FOUND })
+  }
+
+  return res.status(200).json({
+    message: POSTS_MESSAGE.GET_POSTS_SUCCESSFULLY,
+    data: posts
+  })
+}
+
 //   /**
 //    * Delete post by ID
 //    * DELETE /posts/:id
