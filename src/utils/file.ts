@@ -9,8 +9,6 @@ import {
   UPLOAD_IMAGE_TEMP_DIR,
   UPLOAD_VIDEO_DIR
 } from '~/constants/dir'
-import { ErrorWithStatus } from '~/models/Errors'
-import { deleteFileFromS3ByUrl } from './s3'
 
 export enum FileType {
   IMAGE = 'image',
@@ -97,4 +95,3 @@ export const getNameFromFullName = (fullname: string) => {
   namearr.pop()
   return namearr.join('')
 }
-

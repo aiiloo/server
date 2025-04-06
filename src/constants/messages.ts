@@ -96,3 +96,19 @@ export const POSTS_MESSAGE = {
   ERROR_CREATING_POST: 'Error creating post',
   POST_NOT_FOUND: 'Post not found'
 } as const
+
+export const CONVERSATIONS_MESSAGE = {
+  GET_CONVERSATIONS_SUCCESSFULLY: 'Get conversations successfully',
+  GET_CONVERSATIONS_FAILURE: 'Get conversations failure',
+  UNSEND_MESSAGE_SUCCESSFULLY: 'Unsend message successfully',
+  CONVERSATION_NOT_FOUND: 'Conversation not found',
+  CONVERSATION_ID_IS_REQUIRED: 'Conversation id is required',
+  CONVERSATION_NOT_SENT: 'Conversation not sent',
+  CONVERSATION_NOT_YOUR: 'Conversation not your',
+  RECEIVER_USER_ID_IS_REQUIRED: 'Receiver user id is required',
+  RECEIVER_USER_NOT_FOUND: 'Receiver user not found',
+  GET_CONVERSATION_IMAGE_SUCCESSFULLY: 'Get conversation image successfully',
+  GET_CONVERSATION_VIDEO_SUCCESSFULLY: 'Get conversation video successfully',
+  GET_CONVERSATION_FILE_SUCCESSFULLY: 'Get conversation file successfully',
+  GET_CONVERSATION_AUDIO_SUCCESSFULLY: 'Get conversation audio successfully'
+}

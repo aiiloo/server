@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import { MediaConversationType } from '~/constants/enums'
+import { ConversationStatus, MediaConversationType } from '~/constants/enums'
 
 export interface ConversationType {
   _id?: ObjectId
@@ -7,6 +7,7 @@ export interface ConversationType {
   receiver_id: ObjectId
   content?: string
   medias?: MediaConversationType[]
+  status?: ConversationStatus
   created_at?: Date
   updated_at?: Date
 }
@@ -17,6 +18,7 @@ export default class Conversation {
   receiver_id: ObjectId
   content?: string
   medias?: MediaConversationType[]
+  status: ConversationStatus
   created_at?: Date
   updated_at?: Date
 
@@ -28,6 +30,7 @@ export default class Conversation {
     this.receiver_id = receiver_id
     this.content = content
     this.medias = medias
+    this.status = ConversationStatus.SENT
     this.created_at = created_at || date
     this.updated_at = updated_at || date
   }
