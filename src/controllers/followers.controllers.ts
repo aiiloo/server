@@ -1,8 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import { USERS_MESSAGE } from '~/constants/messages'
 import { TokenPayLoad } from '~/models/requests/User.requests'
-import User from '~/models/schemas/User.schema'
-import databaseService from '~/services/database.services'
 import followersService from '~/services/followers.services'
 
 export const addFollowerController = async (req: Request, res: Response, next: NextFunction) => {

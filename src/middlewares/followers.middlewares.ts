@@ -4,6 +4,7 @@ import { ObjectId } from 'mongodb'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { USERS_MESSAGE } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Errors'
+import { TokenPayLoad } from '~/models/requests/User.requests'
 import databaseService from '~/services/database.services'
 import { validate } from '~/utils/validation'
 
@@ -24,8 +25,9 @@ export const checkFollowersValidator = validate(
                 status: HTTP_STATUS.NOT_FOUND
               })
             }
+            const { user_id } = (req as Request).decoded_authorization as TokenPayLoad
             const isFollower = await databaseService.followers.findOne({
-              user_id: new ObjectId((req as Request).decoded_authorization._id),
+              user_id: new ObjectId(user_id),
               follower_user_id: new ObjectId(value)
             })
             if (isFollower) {

@@ -196,10 +196,11 @@ export const updateMyProfileController = async (
 }
 
 export const getProfileByUsernameController = async (req: Request, res: Response) => {
+  const { user_id } = req.decoded_authorization
   const { username } = req.params
-  const result = await usersServices.getProfileByUsername(username)
+  const result = await usersServices.getProfileByUsername(username, user_id)
   if (result)
-    return res.status(201).json({
+    return res.status(200).json({
       message: USERS_MESSAGE.GET_PROFILE_BY_USERNAME_SUCCESSFULLY,
       data: result
     })

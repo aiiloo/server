@@ -451,10 +451,20 @@ class UsersService {
     }
   }
 
-  async getProfileByUsername(username: string) {
-    const user = await databaseService.users.findOne({ username: username })
-    if (user) return user
-    return null
+  async getProfileByUsername(username: string, user_id: string) {
+    const user = await databaseService.users.findOne({ username })
+
+    if (!user) return null
+
+    const isFollow = await databaseService.followers.findOne({
+      user_id: new ObjectId(user_id),
+      follower_user_id: user._id
+    })
+
+    return {
+      ...user,
+      isFollow: !!isFollow
+    }
   }
 }
 

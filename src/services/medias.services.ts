@@ -170,7 +170,6 @@ class MediasService {
       maxSize: 100 * 1024 * 1024,
       maxFiles: 3
     })
-    console.log('Files: ', files)
 
     const result: MediaConversationType[] = await Promise.all(
       files.map(async (file) => {
