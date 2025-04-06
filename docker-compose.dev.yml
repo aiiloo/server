@@ -10,9 +10,6 @@ services:
       - .:/var/www/html
     ports:
       - '4000:4000'
-    environment:
-      - NODE_ENV=development
-    command: ['npm', 'run', 'dev']
   nginx:
     image: nginx:latest
     volumes:

@@ -7,8 +7,6 @@ WORKDIR $workdir
 COPY package.json package-lock.json ./
 RUN npm install
 
-COPY . .
-
 ARG _UID=1001
 ARG _GID=1001
 
@@ -21,5 +19,5 @@ USER appuser
 
 EXPOSE 4000
 
-CMD ["npm", "run", "dev"]
+CMD ["npx ", "nodemon"]
 
