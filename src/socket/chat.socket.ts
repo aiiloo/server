@@ -1,5 +1,5 @@
 import { Server, Socket } from 'socket.io'
-import { MediaConversationType } from '~/constants/enums'
+import { ConversationStatus, MediaConversationType } from '~/constants/enums'
 import conversationsService from '~/services/conversations.services'
 
 export interface ConversationSocketType {
@@ -8,6 +8,7 @@ export interface ConversationSocketType {
   receiver_id: string
   content?: string
   medias?: MediaConversationType[]
+  status?: ConversationStatus.SENT
   created_at?: string
   updated_at?: string
 }

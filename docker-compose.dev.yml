@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: node-app
+    build:
+      context: .
+      dockerfile: ./docker/node/Dockerfile.dev
+    volumes:
+      - .:/var/www/html
+    ports:
+      - '4000:4000'
+    environment:
+      - NODE_ENV=development
+    command: ['npm', 'run', 'dev']
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./docker/nginx/conf.d/nginx.dev.conf:/etc/nginx/conf.d/nginx.conf
+    ports:
+      - '8080:8080'
+    depends_on:
+      - app

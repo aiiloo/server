@@ -40,3 +40,11 @@ export interface MediaConversationType {
   type: FileType
   name?: string
 }
+
+export enum ConversationStatus {
+  SENT = 'sent',
+  DELIVERED = 'delivered',
+  READ = 'read',
+  RECALLED = 'recalled',
+  DELETED = 'deleted'
+}

@@ -1,0 +1,25 @@
+FROM node:20.9.0-alpine AS dev
+
+ARG workdir=/var/www/html
+
+WORKDIR $workdir
+
+COPY package.json package-lock.json ./
+RUN npm install
+
+COPY . .
+
+ARG _UID=1001
+ARG _GID=1001
+
+RUN addgroup -g ${_GID} appuser || true \
+    && adduser -h /var/www -G appuser -u ${_UID} -s /bin/bash -D appuser \
+    && chown -R appuser:appuser /var/www/html
+
+
+USER appuser
+
+EXPOSE 4000
+
+CMD ["npm", "run", "dev"]
+

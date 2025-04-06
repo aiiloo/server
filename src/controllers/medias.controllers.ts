@@ -55,7 +55,7 @@ export const uploadConversationFilesControllers = async (req: Request, res: Resp
     uploadDir: UPLOAD_CONVERSATION_FILE_DIR
   })
   return res.status(201).json({
-    message: 'Upload image successfully',
+    message: 'Upload files successfully',
     data: url
   })
 }
@@ -65,8 +65,9 @@ export const uploadConversationAudioControllers = async (req: Request, res: Resp
     req: req,
     uploadDir: UPLOAD_CONVERSATION_AUDIO_DIR
   })
+  console.log('url: ', url)
   return res.status(201).json({
-    message: 'Upload image successfully',
+    message: 'Upload audio successfully',
     data: url
   })
 }

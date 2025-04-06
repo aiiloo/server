@@ -7,6 +7,7 @@ import { MediaConversationType } from '~/constants/enums'
 import mime from 'mime-types'
 import { Request } from 'express'
 import { uploadFileToS3 } from '~/utils/s3'
+import databaseService from './database.services'
 
 class MediasService {
   async downloadAvatar(avatarUrl: string, userId: string): Promise<string> {
@@ -152,7 +153,8 @@ class MediasService {
 
         return {
           url: s3Result.Location as string,
-          type: FileType.DOCUMENT
+          type: FileType.DOCUMENT,
+          name: file.originalFilename as string
         }
       })
     )
@@ -168,11 +170,12 @@ class MediasService {
       maxSize: 100 * 1024 * 1024,
       maxFiles: 3
     })
+    console.log('Files: ', files)
 
     const result: MediaConversationType[] = await Promise.all(
       files.map(async (file) => {
         const newPath = path.resolve(uploadDir, file.newFilename)
-
+        console.log('Super name: ', file.newFilename)
         fs.renameSync(file.filepath, newPath)
         const contentType = mime.lookup(file.newFilename) || 'application/octet-stream'
         const s3Result = await uploadFileToS3({
@@ -186,7 +189,8 @@ class MediasService {
 
         return {
           url: s3Result.Location as string,
-          type: FileType.AUDIO
+          type: FileType.AUDIO,
+          name: file.originalFilename as string
         }
       })
     )
