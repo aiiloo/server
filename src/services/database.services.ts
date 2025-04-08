@@ -5,6 +5,7 @@ import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import Conversation from '~/models/schemas/Conversation.schema'
 import Follower from '~/models/schemas/Follower.schema'
 import Post from '~/models/schemas/Post.schema'
+import Call from '~/models/schemas/Call.schema'
 
 dotenv.config()
 
@@ -55,6 +56,10 @@ class DatabaseService {
   }
   get posts(): Collection<Post> {
     return this.db.collection(process.env.DB_POSTS_COLLECTION as string)
+  }
+
+  get calls(): Collection<Call> {
+    return this.db.collection(process.env.DB_CALL as string)
   }
 }
 

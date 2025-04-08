@@ -48,3 +48,15 @@ export enum ConversationStatus {
   RECALLED = 'recalled',
   DELETED = 'deleted'
 }
+
+export enum CALL_STATUS {
+  MISSED = 'missed',
+  REJECTED = 'rejected',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled'
+}
+
+export enum CALL_TYPE {
+  VOICE = 'voice',
+  VIDEO = 'video'
+}
