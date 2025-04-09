@@ -1,6 +1,5 @@
 import { ObjectId } from 'mongodb'
-import { PostAudience, PostType } from '~/constants/enums'
-import { Media } from '../schemas/Post.schema'
+import { Media, PostAudience, PostType } from '~/constants/enums'
 
 export interface NewPost {
   type: PostType.NewPost
